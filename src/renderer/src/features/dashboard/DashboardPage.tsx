@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { getDashboardStats } from '../../api';
 
 export const DashboardPage: React.FC = () => {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const data = await (window as any).api.dashboard.getStats();
-                setStats(data);
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchStats();
+        getDashboardStats()
+            .then(setStats)
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, []);
 
     if (loading) return <div className="p-8 text-center">جاري التحميل...</div>;
@@ -23,7 +17,6 @@ export const DashboardPage: React.FC = () => {
 
     return (
         <div className="p-gutter max-w-7xl mx-auto space-y-gutter">
-            {/* Summary Bento Grid */}
             <section className="grid grid-cols-1 md:grid-cols-4 gap-card-gap">
                 <div className="bg-surface-container-lowest p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
@@ -41,7 +34,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="bg-surface-container-lowest p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
                         <div className="p-2 bg-emerald-50 rounded-lg text-emerald-700">
-                            <span className="material-symbols-outlined" data-weight="fill">payments</span>
+                            <span className="material-symbols-outlined">payments</span>
                         </div>
                         <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-full">اليوم</span>
                     </div>
@@ -78,18 +71,16 @@ export const DashboardPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Tables and Charts (Simplified for Component) */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-card-gap">
                 <div className="lg:col-span-2 bg-surface-container-lowest p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] border border-slate-100">
                     <div className="flex items-center justify-between mb-6">
                         <h4 className="font-headline-md text-on-surface">إحصائيات المبيعات</h4>
                     </div>
                     <div className="h-64 flex items-end justify-between gap-4 px-2">
-                        {/* If we have monthly data, use it, otherwise show placeholders */}
                         {(stats.monthlySales.length > 0 ? stats.monthlySales : [40, 60, 85, 50, 95, 30, 70]).map((m: any, i: number) => {
                             const height = typeof m === 'number' ? m : (m.total / (stats.totalSales || 1)) * 100;
                             return (
-                                <div key={i} className="w-full bg-primary-container/10 rounded-t-lg relative group" style={{ height: `100%` }}>
+                                <div key={i} className="w-full bg-primary-container/10 rounded-t-lg relative group" style={{ height: '100%' }}>
                                     <div className="absolute inset-x-0 bottom-0 bg-primary-container rounded-t-lg transition-all" style={{ height: `${Math.min(100, Math.max(10, height))}%` }}></div>
                                     <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                                         {typeof m === 'number' ? '' : `${m.total.toLocaleString()} ج.م`}

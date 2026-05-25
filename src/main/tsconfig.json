@@ -8,15 +8,11 @@
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
         "forceConsistentCasingInFileNames": true
     },
     "include": [
         "../../src/main/**/*",
-        "../../src/preload/**/*",
-        "../../src/core/**/*",
-        "../../src/shared/**/*"
+        "../../src/preload/**/*"
     ],
     "exclude": [
         "../../src/renderer/**/*",

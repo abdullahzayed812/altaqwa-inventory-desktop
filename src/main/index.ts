@@ -1,19 +1,16 @@
 import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
-import { initializeDatabase } from './database/dataSource';
-import { setupIpcHandlers } from './ipc';
+import { PrintService } from './services/PrintService';
 
 let mainWindow: BrowserWindow | null = null;
 
-async function createWindow() {
-    await initializeDatabase();
-    setupIpcHandlers();
+function createWindow() {
+    PrintService.init();
 
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
         webPreferences: {
-            // At runtime, __dirname = dist/main/ → preload at dist/preload/index.js
             preload: path.join(__dirname, '../preload/index.js'),
             nodeIntegration: false,
             contextIsolation: true,
@@ -26,8 +23,6 @@ async function createWindow() {
         mainWindow.loadURL('http://localhost:5173');
         mainWindow.webContents.openDevTools();
     } else {
-        // Vite builds renderer to dist/renderer/index.html
-        // __dirname at runtime = dist/main/ → ../renderer/index.html = dist/renderer/index.html
         mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     }
 }
