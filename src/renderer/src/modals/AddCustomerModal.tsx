@@ -13,6 +13,9 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
+    const [type, setType] = useState<'customer' | 'driver'>('customer');
+    const [vehiclePlate, setVehiclePlate] = useState('');
+    const [vehicleDetails, setVehicleDetails] = useState('');
     const [balanceAmount, setBalanceAmount] = useState('');
     const [balanceType, setBalanceType] = useState<BalanceType>('مدين');
     const [loading, setLoading] = useState(false);
@@ -21,6 +24,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
 
     const handleClose = () => {
         setName(''); setPhone(''); setAddress(''); setBalanceAmount(''); setBalanceType('مدين');
+        setType('customer'); setVehiclePlate(''); setVehicleDetails('');
         onClose();
     };
 
@@ -30,7 +34,15 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
         try {
             const amount = Number(balanceAmount) || 0;
             const initialDebt = balanceType === 'مدين' ? amount : -amount;
-            await createCustomer({ name, phone: phone || undefined, address: address || undefined, initialDebt: initialDebt || undefined });
+            await createCustomer({
+                name,
+                phone: phone || undefined,
+                address: address || undefined,
+                initialDebt: initialDebt || undefined,
+                type,
+                vehiclePlate: type === 'driver' ? (vehiclePlate || undefined) : undefined,
+                vehicleDetails: type === 'driver' ? (vehicleDetails || undefined) : undefined,
+            });
             onSuccess();
             handleClose();
         } catch (error) {
@@ -49,8 +61,8 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
                             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person_add</span>
                         </div>
                         <div>
-                            <h3 className="font-headline-md text-on-surface text-lg font-bold">إضافة عميل جديد</h3>
-                            <p className="text-sm text-slate-500">قم بإدخال بيانات العميل لإنشاء ملف تعريفي جديد</p>
+                            <h3 className="font-headline-md text-on-surface text-lg font-bold">إضافة عميل / سائق جديد</h3>
+                            <p className="text-sm text-slate-500">قم بإدخال البيانات لإنشاء ملف تعريفي جديد</p>
                         </div>
                     </div>
                     <button onClick={handleClose} className="text-slate-400 hover:text-primary transition-colors p-1">
@@ -58,11 +70,26 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
                     </button>
                 </div>
 
-                <div className="px-8 py-8 space-y-5">
+                <div className="px-8 py-8 space-y-5 max-h-[70vh] overflow-y-auto">
                     <form id="add-customer-form" onSubmit={handleSubmit} className="space-y-5">
+
+                        <div className="space-y-2">
+                            <label className="font-label-md text-on-surface block">النوع</label>
+                            <div className="flex gap-3">
+                                <button type="button" onClick={() => setType('customer')}
+                                    className={`flex-1 py-2 rounded-lg border font-bold text-sm transition-all ${type === 'customer' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                                    عميل
+                                </button>
+                                <button type="button" onClick={() => setType('driver')}
+                                    className={`flex-1 py-2 rounded-lg border font-bold text-sm transition-all ${type === 'driver' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                                    سائق
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <label className="font-label-md text-on-surface block">الاسم بالكامل <span className="text-red-500">*</span></label>
-                            <input value={name} onChange={e => setName(e.target.value)} required className="w-full h-12 px-4 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md transition-all outline-none" placeholder="أدخل اسم العميل أو اسم المؤسسة" type="text" />
+                            <input value={name} onChange={e => setName(e.target.value)} required className="w-full h-12 px-4 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md transition-all outline-none" placeholder="أدخل الاسم" type="text" />
                         </div>
 
                         <div className="space-y-2">
@@ -74,6 +101,19 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
                             <label className="font-label-md text-on-surface block">العنوان</label>
                             <textarea value={address} onChange={e => setAddress(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md transition-all outline-none resize-none" placeholder="المحافظة، المدينة، اسم الشارع" rows={2}></textarea>
                         </div>
+
+                        {type === 'driver' && (
+                            <>
+                                <div className="space-y-2">
+                                    <label className="font-label-md text-on-surface block">رقم اللوحة</label>
+                                    <input value={vehiclePlate} onChange={e => setVehiclePlate(e.target.value)} className="w-full h-12 px-4 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary font-body-md transition-all outline-none" placeholder="مثال: أ ب ج 1234" type="text" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="font-label-md text-on-surface block">تفاصيل السيارة</label>
+                                    <input value={vehicleDetails} onChange={e => setVehicleDetails(e.target.value)} className="w-full h-12 px-4 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary font-body-md transition-all outline-none" placeholder="مثال: كيا بيكس 2020" type="text" />
+                                </div>
+                            </>
+                        )}
 
                         <div className="space-y-2">
                             <label className="font-label-md text-on-surface block">الرصيد الافتتاحي</label>

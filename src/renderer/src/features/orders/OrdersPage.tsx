@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { getOrders, updateOrderStatus } from '../../api';
 import { OrderStatus } from '../../types';
 import { CreateOrderModal } from '../../modals/CreateOrderModal';
-import { AssignDriverModal } from '../../modals/AssignDriverModal';
 import { PrintPreviewModal } from '../../modals/PrintPreviewModal';
 
 export const OrdersPage: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [isModalOpen, setModalOpen] = useState(false);
-    const [assignOrderId, setAssignOrderId] = useState<number | undefined>(undefined);
     const [isPreviewOpen, setPreviewOpen] = useState(false);
     const [printHtml, setPrintHtml] = useState('');
     const [previewTitle, setPreviewTitle] = useState('معاينة الطباعة');
@@ -78,7 +76,7 @@ export const OrdersPage: React.FC = () => {
             <div className="flex items-end justify-between mb-8">
                 <div>
                     <h2 className="font-headline-xl text-on-background">إدارة الطلبات</h2>
-                    <p className="font-body-md text-slate-500 mt-1">تتبع وإدارة جميع طلبات توريد الأعلاف والعمليات اللوجستية</p>
+                    <p className="font-body-md text-slate-500 mt-1">تتبع وإدارة جميع طلبات توريد الأعلاف</p>
                 </div>
                 <div className="flex gap-3">
                     <button onClick={handlePrintList} className="bg-white text-slate-700 px-6 py-3 rounded-xl font-bold flex items-center gap-2 border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
@@ -167,11 +165,9 @@ export const OrdersPage: React.FC = () => {
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                                         order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
                                         order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
-                                        order.status === 'ASSIGNED' ? 'bg-blue-100 text-blue-700' :
                                         'bg-amber-100 text-amber-700'
                                     }`}>
                                         {order.status === 'PENDING' ? 'قيد الانتظار' :
-                                         order.status === 'ASSIGNED' ? 'جاري التوصيل' :
                                          order.status === 'DELIVERED' ? 'تم التسليم' : 'ملغي'}
                                     </span>
                                 </td>
@@ -180,9 +176,6 @@ export const OrdersPage: React.FC = () => {
                                     <div className="flex items-center justify-end gap-1">
                                         {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
                                             <>
-                                                <button onClick={() => { setAssignOrderId(order.id); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="تعيين سائق">
-                                                    <span className="material-symbols-outlined text-sm">person_pin_circle</span>
-                                                </button>
                                                 <button onClick={() => handleStatusUpdate(order.id, OrderStatus.DELIVERED)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="تحديد كمكتمل">
                                                     <span className="material-symbols-outlined">check_circle</span>
                                                 </button>
@@ -203,7 +196,6 @@ export const OrdersPage: React.FC = () => {
             </div>
 
             <CreateOrderModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} onSuccess={loadOrders} />
-            <AssignDriverModal isOpen={!!assignOrderId} orderId={assignOrderId} onClose={() => setAssignOrderId(undefined)} onSuccess={loadOrders} />
             <PrintPreviewModal isOpen={isPreviewOpen} onClose={() => setPreviewOpen(false)} html={printHtml} onPrint={executePrint} title={previewTitle} />
         </div>
     );

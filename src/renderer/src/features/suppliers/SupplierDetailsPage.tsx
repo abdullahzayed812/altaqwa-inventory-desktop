@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getSupplierById, getSupplierLedger, updateSupplier, deleteSupplier } from '../../api';
+import { getSupplierById, getSupplierLedger, updateSupplier, deleteSupplier, getSupplierPaymentById, updateSupplierPayment } from '../../api';
 import { CreatePurchaseModal } from '../../modals/CreatePurchaseModal';
 import { AddSupplierPaymentModal } from '../../modals/AddSupplierPaymentModal';
+import { EditPurchaseModal } from '../../modals/EditPurchaseModal';
 
 export const SupplierDetailsPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -16,6 +17,15 @@ export const SupplierDetailsPage: React.FC = () => {
     const [editPhone, setEditPhone] = useState('');
     const [editAddress, setEditAddress] = useState('');
     const [editSaving, setEditSaving] = useState(false);
+
+    const [editPurchaseId, setEditPurchaseId] = useState<number | null>(null);
+
+    const [editPayVisible, setEditPayVisible] = useState(false);
+    const [editingPayment, setEditingPayment] = useState<any>(null);
+    const [editPayAmount, setEditPayAmount] = useState('');
+    const [editPayMethod, setEditPayMethod] = useState<'CASH' | 'BANK'>('CASH');
+    const [editPayNote, setEditPayNote] = useState('');
+    const [editPaySaving, setEditPaySaving] = useState(false);
 
     const loadData = async () => {
         if (!id) return;
@@ -57,6 +67,37 @@ export const SupplierDetailsPage: React.FC = () => {
             alert(err.message || 'فشل تحديث بيانات المورد');
         } finally {
             setEditSaving(false);
+        }
+    };
+
+    const openEditPayment = async (referenceId: number) => {
+        try {
+            const p = await getSupplierPaymentById(referenceId);
+            setEditingPayment(p);
+            setEditPayAmount(String(p.amount));
+            setEditPayMethod(p.method === 'BANK' ? 'BANK' : 'CASH');
+            setEditPayNote(p.note ?? '');
+            setEditPayVisible(true);
+        } catch {
+            alert('فشل تحميل بيانات الدفعة');
+        }
+    };
+
+    const saveEditPayment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingPayment) return;
+        const amount = parseFloat(editPayAmount);
+        if (!amount || amount <= 0) { alert('أدخل مبلغاً صحيحاً'); return; }
+        setEditPaySaving(true);
+        try {
+            await updateSupplierPayment(editingPayment.id, { amount, method: editPayMethod, note: editPayNote.trim() || null });
+            setEditPayVisible(false);
+            setEditingPayment(null);
+            loadData();
+        } catch (err: any) {
+            alert(err.message || 'فشل تحديث الدفعة');
+        } finally {
+            setEditPaySaving(false);
         }
     };
 
@@ -153,6 +194,7 @@ export const SupplierDetailsPage: React.FC = () => {
                                     <th className="pb-4">البيان (النوع)</th>
                                     <th className="pb-4">رقم المرجع</th>
                                     <th className="pb-4 text-left">القيمة</th>
+                                    <th className="pb-4 text-left"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -182,6 +224,25 @@ export const SupplierDetailsPage: React.FC = () => {
                                         <td className={`py-4 text-left font-bold font-data-tabular ${entry.type === 'PURCHASE' ? 'text-red-600' : 'text-green-600'}`}>
                                             {entry.type === 'PURCHASE' ? '+' : '-'} {Number(entry.amount).toLocaleString()} ج.م
                                         </td>
+                                        <td className="py-4 text-left">
+                                            {entry.type === 'PURCHASE' ? (
+                                                <button
+                                                    onClick={() => setEditPurchaseId(entry.referenceId)}
+                                                    className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-xs font-bold"
+                                                    title="تعديل الفاتورة"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">edit</span>
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => entry.referenceId && openEditPayment(entry.referenceId)}
+                                                    className="text-green-600 hover:text-green-800 flex items-center gap-1 text-xs font-bold"
+                                                    title="تعديل الدفعة"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">edit</span>
+                                                </button>
+                                            )}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -192,6 +253,53 @@ export const SupplierDetailsPage: React.FC = () => {
 
             <CreatePurchaseModal isOpen={isPurchaseModalOpen} onClose={() => setPurchaseModalOpen(false)} onSuccess={loadData} initialSupplierId={Number(id)} />
             <AddSupplierPaymentModal isOpen={isPaymentModalOpen} onClose={() => setPaymentModalOpen(false)} onSuccess={loadData} initialSupplierId={Number(id)} />
+            <EditPurchaseModal isOpen={editPurchaseId !== null} purchaseId={editPurchaseId} onClose={() => setEditPurchaseId(null)} onSuccess={loadData} />
+
+            {editPayVisible && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm rtl">
+                    <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="font-bold text-lg">تعديل الدفعة</h3>
+                            <button onClick={() => { setEditPayVisible(false); setEditingPayment(null); }} className="text-slate-400 hover:text-primary">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <form onSubmit={saveEditPayment} className="px-6 py-5 space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold mb-1">المبلغ</label>
+                                <input type="number" value={editPayAmount} onChange={e => setEditPayAmount(e.target.value)} required min="0.01" step="0.01"
+                                    className="w-full h-11 px-4 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold mb-2">طريقة الدفع</label>
+                                <div className="flex gap-3">
+                                    <button type="button" onClick={() => setEditPayMethod('CASH')}
+                                        className={`flex-1 py-2 rounded-lg border-2 font-bold text-sm transition-all ${editPayMethod === 'CASH' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200'}`}>
+                                        نقدي
+                                    </button>
+                                    <button type="button" onClick={() => setEditPayMethod('BANK')}
+                                        className={`flex-1 py-2 rounded-lg border-2 font-bold text-sm transition-all ${editPayMethod === 'BANK' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200'}`}>
+                                        حوالة
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold mb-1">ملاحظات</label>
+                                <textarea value={editPayNote} onChange={e => setEditPayNote(e.target.value)} rows={2}
+                                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary resize-none" />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-1">
+                                <button type="button" onClick={() => { setEditPayVisible(false); setEditingPayment(null); }}
+                                    className="px-5 py-2 border border-slate-200 rounded-lg text-slate-600">إلغاء</button>
+                                <button type="submit" disabled={editPaySaving}
+                                    className="px-6 py-2 bg-primary text-white rounded-lg font-bold disabled:opacity-50">
+                                    {editPaySaving ? 'جاري الحفظ...' : 'حفظ'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {isEditOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm rtl">

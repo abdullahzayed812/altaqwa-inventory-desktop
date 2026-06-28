@@ -1,24 +1,37 @@
 import client from './client';
 import { OrderStatus, PaymentMethod } from '../types';
 import type {
-  Customer, Supplier, Product, Driver, Order,
+  Customer, Supplier, Product, Order,
   Payment, Purchase, SupplierPayment, SupplierLedger,
-  DriverLedger, DashboardStats, ReportData,
+  DashboardStats, ReportData,
 } from '../types';
 
 // ─── Customers ────────────────────────────────────────────────────────────────
 
-export const getCustomers = () =>
-  client.get<Customer[]>('/customers').then(r => r.data);
+export const getCustomers = (type?: 'customer' | 'driver') =>
+  client.get<Customer[]>('/customers', { params: type ? { type } : undefined }).then(r => r.data);
 
 export const getCustomerById = (id: number) =>
   client.get<Customer>(`/customers/${id}`).then(r => r.data);
 
-export const createCustomer = (data: { name: string; phone?: string; address?: string; initialDebt?: number }) =>
-  client.post<Customer>('/customers', data).then(r => r.data);
+export const createCustomer = (data: {
+  name: string;
+  phone?: string;
+  address?: string;
+  initialDebt?: number;
+  type?: 'customer' | 'driver';
+  vehiclePlate?: string;
+  vehicleDetails?: string;
+}) => client.post<Customer>('/customers', data).then(r => r.data);
 
-export const updateCustomer = (id: number, data: { name?: string; phone?: string | null; address?: string | null }) =>
-  client.put<Customer>(`/customers/${id}`, data).then(r => r.data);
+export const updateCustomer = (id: number, data: {
+  name?: string;
+  phone?: string | null;
+  address?: string | null;
+  vehiclePlate?: string | null;
+  vehicleDetails?: string | null;
+  isAvailable?: boolean;
+}) => client.put<Customer>(`/customers/${id}`, data).then(r => r.data);
 
 export const deleteCustomer = (id: number) =>
   client.delete(`/customers/${id}`);
@@ -43,18 +56,14 @@ export const getOrders = () =>
   client.get<Order[]>('/orders').then(r => r.data);
 
 export const createOrder = (data: {
-  customerId?: number | null;
-  driverId?: number | null;
+  customerId: number;
   totalAmount: number;
-  totalDelivery?: number;
-  items: { productId: number; quantity: number; price: number; deliveryFeePerTon?: number; totalDelivery?: number }[];
+  naulonUncollected?: number;
+  items: { productId: number; quantity: number; price: number }[];
 }) => client.post<Order>('/orders', data).then(r => r.data);
 
 export const updateOrderStatus = (id: number, status: OrderStatus) =>
   client.patch<Order>(`/orders/${id}/status`, { status }).then(r => r.data);
-
-export const assignDriver = (orderId: number, driverId: number) =>
-  client.patch<Order>(`/orders/${orderId}/assign-driver`, { driverId }).then(r => r.data);
 
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
@@ -73,6 +82,13 @@ export const createPayment = (data: {
   method: PaymentMethod;
   notes?: string;
 }) => client.post<Payment>('/payments', data).then(r => r.data);
+
+export const updatePayment = (id: number, data: {
+  amount: number;
+  method?: string;
+  senderName?: string | null;
+  notes?: string | null;
+}) => client.put<Payment>(`/payments/${id}`, data).then(r => r.data);
 
 // ─── Suppliers ────────────────────────────────────────────────────────────────
 
@@ -96,8 +112,25 @@ export const createPurchase = (data: {
   items: { productId: number; quantity: number; price: number }[];
 }) => client.post<Purchase>('/purchases', data).then(r => r.data);
 
+export const getPurchaseById = (id: number) =>
+  client.get<Purchase>(`/purchases/${id}`).then(r => r.data);
+
+export const updatePurchase = (id: number, data: {
+  items: { productId: number; quantity: number; price: number }[];
+}) => client.put<Purchase>(`/purchases/${id}`, data).then(r => r.data);
+
+export const getSupplierPaymentById = (id: number) =>
+  client.get<SupplierPayment>(`/supplier-payments/${id}`).then(r => r.data);
+
 export const addSupplierPayment = (supplierId: number, data: { amount: number; method: PaymentMethod; note?: string }) =>
   client.post<SupplierPayment>(`/suppliers/${supplierId}/payments`, data).then(r => r.data);
+
+export const updateSupplierPayment = (id: number, data: {
+  amount: number;
+  method?: string;
+  senderName?: string | null;
+  note?: string | null;
+}) => client.put<SupplierPayment>(`/supplier-payments/${id}`, data).then(r => r.data);
 
 export const getSupplierLedger = (supplierId: number) =>
   client.get<SupplierLedger[]>(`/suppliers/${supplierId}/ledger`).then(r => r.data);
@@ -107,35 +140,6 @@ export const getAllSupplierPayments = () =>
 
 export const getAllPurchases = () =>
   client.get<Purchase[]>('/suppliers/purchases/all').then(r => r.data);
-
-// ─── Drivers ──────────────────────────────────────────────────────────────────
-
-export const getDrivers = () =>
-  client.get<Driver[]>('/drivers').then(r => r.data);
-
-export const getDriverById = (id: number) =>
-  client.get<Driver>(`/drivers/${id}`).then(r => r.data);
-
-export const createDriver = (data: { name: string; phone?: string; vehiclePlate?: string; vehicleDetails?: string; initialBalance?: number }) =>
-  client.post<Driver>('/drivers', data).then(r => r.data);
-
-export const updateDriver = (id: number, data: { name?: string; phone?: string | null; vehiclePlate?: string | null; vehicleDetails?: string | null }) =>
-  client.put<Driver>(`/drivers/${id}`, data).then(r => r.data);
-
-export const deleteDriver = (id: number) =>
-  client.delete(`/drivers/${id}`);
-
-export const updateDriverAvailability = (id: number, isAvailable: boolean) =>
-  client.patch<Driver>(`/drivers/${id}/availability`, { isAvailable }).then(r => r.data);
-
-export const addDriverPayment = (driverId: number, data: { amount: number; notes?: string }) =>
-  client.post(`/drivers/${driverId}/payments`, data).then(r => r.data);
-
-export const addDriverDebt = (driverId: number, data: { amount: number; notes?: string }) =>
-  client.post(`/drivers/${driverId}/debt`, data).then(r => r.data);
-
-export const getDriverLedger = (driverId: number) =>
-  client.get<DriverLedger[]>(`/drivers/${driverId}/ledger`).then(r => r.data);
 
 // ─── Dashboard & Reports ──────────────────────────────────────────────────────
 

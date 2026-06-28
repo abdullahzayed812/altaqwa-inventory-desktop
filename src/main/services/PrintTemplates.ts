@@ -476,7 +476,6 @@ export class PrintTemplates {
     private static getStatusLabel(status: string) {
         switch (status) {
             case 'PENDING': return 'قيد الانتظار';
-            case 'ASSIGNED': return 'قيد التوصيل';
             case 'DELIVERED': return 'تم التسليم';
             case 'CANCELLED': return 'ملغي';
             default: return status;

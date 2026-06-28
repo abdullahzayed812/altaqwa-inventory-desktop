@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getCustomerById, getCustomerOrders, getCustomerPayments, updateCustomer, deleteCustomer, createPayment } from '../../api';
+import { getCustomerById, getCustomerOrders, getCustomerPayments, updateCustomer, deleteCustomer, createPayment, updatePayment } from '../../api';
 import { PaymentMethod } from '../../types';
 
 export const CustomerDetailsPage: React.FC = () => {
@@ -23,6 +23,13 @@ export const CustomerDetailsPage: React.FC = () => {
     const [payNotes, setPayNotes] = useState('');
     const [payError, setPayError] = useState('');
     const [paySaving, setPaySaving] = useState(false);
+
+    const [editPayment, setEditPayment] = useState<any>(null);
+    const [editPayAmount, setEditPayAmount] = useState('');
+    const [editPayMethod, setEditPayMethod] = useState<'CASH' | 'BANK'>('CASH');
+    const [editPayNotes, setEditPayNotes] = useState('');
+    const [editPayError, setEditPayError] = useState('');
+    const [editPaySaving, setEditPaySaving] = useState(false);
 
     const loadData = async () => {
         if (!id) return;
@@ -70,7 +77,7 @@ export const CustomerDetailsPage: React.FC = () => {
     };
 
     const handleDelete = async () => {
-        if (!window.confirm(`هل أنت متأكد من حذف العميل "${customer?.name}"؟`)) return;
+        if (!window.confirm(`هل أنت متأكد من حذف "${customer?.name}"؟`)) return;
         try {
             await deleteCustomer(Number(id));
             navigate('/customers');
@@ -102,6 +109,35 @@ export const CustomerDetailsPage: React.FC = () => {
         }
     };
 
+    const openEditPayment = (p: any) => {
+        setEditPayment(p);
+        setEditPayAmount(String(p.amount));
+        setEditPayMethod(p.method === 'BANK' ? 'BANK' : 'CASH');
+        setEditPayNotes(p.notes || '');
+        setEditPayError('');
+    };
+
+    const handleEditPayment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEditPayError('');
+        const amount = Number(editPayAmount);
+        if (amount <= 0) { setEditPayError('أدخل مبلغاً صحيحاً'); return; }
+        setEditPaySaving(true);
+        try {
+            await updatePayment(editPayment.id, {
+                amount,
+                method: editPayMethod,
+                notes: editPayNotes || null,
+            });
+            setEditPayment(null);
+            loadData();
+        } catch (err: any) {
+            setEditPayError(err.message || 'فشل تعديل الدفعة');
+        } finally {
+            setEditPaySaving(false);
+        }
+    };
+
     if (!customer) return <div className="p-8 text-center">جاري التحميل...</div>;
 
     const debt = Number(customer.totalDebt);
@@ -114,12 +150,17 @@ export const CustomerDetailsPage: React.FC = () => {
             <div className="mb-6">
                 <Link to="/customers" className="text-primary flex items-center gap-1 mb-4 hover:underline">
                     <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                    العودة لقائمة العملاء
+                    العودة للقائمة
                 </Link>
                 <div className="flex items-end justify-between">
                     <div>
-                        <h2 className="font-headline-xl text-slate-900 mb-1">{customer.name}</h2>
-                        <p className="text-slate-500">تفاصيل العميل وكشف الحساب الجاري.</p>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h2 className="font-headline-xl text-slate-900">{customer.name}</h2>
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${customer.type === 'driver' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                {customer.type === 'driver' ? 'سائق' : 'عميل'}
+                            </span>
+                        </div>
+                        <p className="text-slate-500">تفاصيل الحساب الجاري.</p>
                     </div>
                     <div className="flex gap-3">
                         <button onClick={openEdit} className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 flex items-center gap-2 hover:border-blue-500 text-slate-700 transition-colors">
@@ -156,6 +197,16 @@ export const CustomerDetailsPage: React.FC = () => {
                                 <p className="font-bold text-slate-900">{customer.address || '-'}</p>
                             </div>
                         </div>
+                        {customer.type === 'driver' && customer.vehiclePlate && (
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-slate-400">local_shipping</span>
+                                <div>
+                                    <p className="text-xs text-slate-500">رقم اللوحة</p>
+                                    <p className="font-bold text-slate-900">{customer.vehiclePlate}</p>
+                                    {customer.vehicleDetails && <p className="text-xs text-slate-500">{customer.vehicleDetails}</p>}
+                                </div>
+                            </div>
+                        )}
                         <div className={`p-4 rounded-xl text-center ${balanceBg} mt-4 border-t pt-4`}>
                             <p className="text-xs text-slate-500 mb-1">{balanceLabel}</p>
                             <p className={`text-2xl font-bold font-data-tabular ${balanceColor}`}>
@@ -222,11 +273,12 @@ export const CustomerDetailsPage: React.FC = () => {
                                         <th className="px-6 py-3">طريقة الدفع</th>
                                         <th className="px-6 py-3">ملاحظات</th>
                                         <th className="px-6 py-3 text-left">المبلغ</th>
+                                        <th className="px-6 py-3 text-center">تعديل</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {payments.length === 0 ? (
-                                        <tr><td colSpan={4} className="text-center py-8 text-slate-400">لا يوجد مدفوعات.</td></tr>
+                                        <tr><td colSpan={5} className="text-center py-8 text-slate-400">لا يوجد مدفوعات.</td></tr>
                                     ) : payments.map(p => (
                                         <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                                             <td className="px-6 py-4 text-slate-500 text-sm">{new Date(p.createdAt).toLocaleDateString('ar-EG')}</td>
@@ -237,6 +289,15 @@ export const CustomerDetailsPage: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-slate-500 text-sm">{p.notes || '-'}</td>
                                             <td className="px-6 py-4 font-bold font-data-tabular text-blue-700 text-left">{Number(p.amount).toLocaleString()} ج.م</td>
+                                            <td className="px-6 py-4 text-center">
+                                                <button
+                                                    onClick={() => openEditPayment(p)}
+                                                    className="p-1.5 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                                                    title="تعديل الدفعة"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">edit</span>
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -246,11 +307,12 @@ export const CustomerDetailsPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Edit Customer Modal */}
             {isEditOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm rtl">
                     <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="font-bold text-lg">تعديل بيانات العميل</h3>
+                            <h3 className="font-bold text-lg">تعديل البيانات</h3>
                             <button onClick={() => setEditOpen(false)} className="text-slate-400 hover:text-primary">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
@@ -279,6 +341,7 @@ export const CustomerDetailsPage: React.FC = () => {
                 </div>
             )}
 
+            {/* New Payment Modal */}
             {isPaymentOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm rtl">
                     <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden">
@@ -317,6 +380,52 @@ export const CustomerDetailsPage: React.FC = () => {
                                 <button type="button" onClick={() => setPaymentOpen(false)} className="px-5 py-2 border border-slate-200 rounded-lg text-slate-600">إلغاء</button>
                                 <button type="submit" disabled={paySaving} className="px-6 py-2 bg-primary text-white rounded-lg font-bold disabled:opacity-50">
                                     {paySaving ? 'جاري الحفظ...' : 'تأكيد الدفعة'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Payment Modal */}
+            {editPayment && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm rtl">
+                    <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="font-bold text-lg">تعديل الدفعة</h3>
+                            <button onClick={() => setEditPayment(null)} className="text-slate-400 hover:text-primary">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <form onSubmit={handleEditPayment} className="px-6 py-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold mb-1">المبلغ</label>
+                                <input value={editPayAmount} onChange={e => { setEditPayAmount(e.target.value); setEditPayError(''); }} required type="number" min="0.01" step="0.01"
+                                    className={`w-full h-11 px-4 bg-slate-50 border ${editPayError ? 'border-red-400' : 'border-slate-300'} rounded-lg outline-none focus:ring-2 focus:ring-primary font-bold text-lg text-primary`}
+                                    placeholder="0.00" />
+                                {editPayError && <p className="text-xs text-red-600 mt-1">{editPayError}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold mb-2">طريقة الدفع</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button type="button" onClick={() => setEditPayMethod('CASH')}
+                                        className={`py-2 rounded-lg border font-bold text-sm transition-all ${editPayMethod === 'CASH' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                                        نقدي
+                                    </button>
+                                    <button type="button" onClick={() => setEditPayMethod('BANK')}
+                                        className={`py-2 rounded-lg border font-bold text-sm transition-all ${editPayMethod === 'BANK' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                                        حوالة بنكية
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold mb-1">ملاحظات</label>
+                                <textarea value={editPayNotes} onChange={e => setEditPayNotes(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary resize-none" rows={2} placeholder="اختياري..." />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button type="button" onClick={() => setEditPayment(null)} className="px-5 py-2 border border-slate-200 rounded-lg text-slate-600">إلغاء</button>
+                                <button type="submit" disabled={editPaySaving} className="px-6 py-2 bg-primary text-white rounded-lg font-bold disabled:opacity-50">
+                                    {editPaySaving ? 'جاري الحفظ...' : 'حفظ التعديل'}
                                 </button>
                             </div>
                         </form>

@@ -6,8 +6,6 @@ import { InventoryPage } from './features/inventory/InventoryPage';
 import { CustomersPage } from './features/customers/CustomersPage';
 import { CustomerDetailsPage } from './features/customers/CustomerDetailsPage';
 import { OrdersPage } from './features/orders/OrdersPage';
-import { DriversPage } from './features/drivers/DriversPage';
-import { DriverDetailsPage } from './features/drivers/DriverDetailsPage';
 import { PaymentsPage } from './features/payments/PaymentsPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { SuppliersPage } from './features/suppliers/SuppliersPage';
@@ -25,8 +23,6 @@ const App: React.FC = () => {
           <Route path="suppliers" element={<SuppliersPage />} />
           <Route path="suppliers/:id" element={<SupplierDetailsPage />} />
           <Route path="orders" element={<OrdersPage />} />
-          <Route path="drivers" element={<DriversPage />} />
-          <Route path="drivers/:id" element={<DriverDetailsPage />} />
           <Route path="payments" element={<PaymentsPage />} />
           <Route path="reports" element={<ReportsPage />} />
         </Route>

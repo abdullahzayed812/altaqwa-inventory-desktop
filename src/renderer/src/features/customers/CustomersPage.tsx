@@ -40,7 +40,7 @@ export const CustomersPage: React.FC = () => {
     };
 
     const handleDelete = async (customer: any) => {
-        if (!window.confirm(`هل أنت متأكد من حذف العميل "${customer.name}"؟`)) return;
+        if (!window.confirm(`هل أنت متأكد من حذف "${customer.name}"؟`)) return;
         try {
             await deleteCustomer(customer.id);
             loadCustomers();
@@ -64,8 +64,8 @@ export const CustomersPage: React.FC = () => {
         <div className="px-8 pb-12 rtl">
             <div className="flex items-end justify-between mb-8">
                 <div>
-                    <h2 className="font-headline-xl text-slate-900 mb-1">إدارة العملاء</h2>
-                    <p className="text-slate-500">قائمة شاملة بجميع عملاء المستودع وحساباتهم الجارية.</p>
+                    <h2 className="font-headline-xl text-slate-900 mb-1">إدارة العملاء والسائقين</h2>
+                    <p className="text-slate-500">قائمة شاملة بجميع العملاء والسائقين وحساباتهم الجارية.</p>
                 </div>
                 <div className="flex gap-3">
                     <button onClick={handlePrint} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 hover:border-primary transition-colors group">
@@ -91,7 +91,7 @@ export const CustomersPage: React.FC = () => {
                             <span className="material-symbols-outlined text-blue-600">group</span>
                         </div>
                         <div>
-                            <p className="text-xs text-slate-500">العملاء النشطون</p>
+                            <p className="text-xs text-slate-500">الإجمالي</p>
                             <p className="text-lg font-bold text-slate-900">{customers.length}</p>
                         </div>
                     </div>
@@ -100,7 +100,7 @@ export const CustomersPage: React.FC = () => {
 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-headline-md font-bold text-slate-900">قائمة العملاء</h3>
+                    <h3 className="font-headline-md font-bold text-slate-900">القائمة</h3>
                     <div className="flex items-center gap-3">
                         <div className="relative">
                             <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
@@ -114,7 +114,7 @@ export const CustomersPage: React.FC = () => {
                         </div>
                         <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 transition-all">
                             <span className="material-symbols-outlined text-sm">person_add</span>
-                            إضافة عميل جديد
+                            إضافة جديد
                         </button>
                     </div>
                 </div>
@@ -123,8 +123,9 @@ export const CustomersPage: React.FC = () => {
                     <table className="w-full text-right">
                         <thead>
                             <tr className="text-slate-500 border-b border-slate-50 text-sm font-medium">
-                                <th className="pb-4 pr-4">رقم العميل</th>
+                                <th className="pb-4 pr-4">رقم</th>
                                 <th className="pb-4">الاسم</th>
+                                <th className="pb-4">النوع</th>
                                 <th className="pb-4">رقم الهاتف</th>
                                 <th className="pb-4">العنوان</th>
                                 <th className="pb-4">الرصيد</th>
@@ -134,7 +135,7 @@ export const CustomersPage: React.FC = () => {
                         <tbody className="divide-y divide-slate-50">
                             {filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="text-center py-8 text-slate-400">
+                                    <td colSpan={7} className="text-center py-8 text-slate-400">
                                         {search ? `لا توجد نتائج لـ "${search}"` : 'لا يوجد عملاء حالياً. أضف عميلاً جديداً.'}
                                     </td>
                                 </tr>
@@ -142,6 +143,15 @@ export const CustomersPage: React.FC = () => {
                                 <tr key={customer.id} className="hover:bg-blue-50/30 transition-all group">
                                     <td className="py-4 pr-4 text-slate-500 font-data-tabular">#{customer.id}</td>
                                     <td className="py-4 font-bold text-slate-900">{customer.name}</td>
+                                    <td className="py-4">
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                            customer.type === 'driver'
+                                                ? 'bg-amber-100 text-amber-700'
+                                                : 'bg-blue-100 text-blue-700'
+                                        }`}>
+                                            {customer.type === 'driver' ? 'سائق' : 'عميل'}
+                                        </span>
+                                    </td>
                                     <td className="py-4 text-slate-600 font-data-tabular">{customer.phone || '-'}</td>
                                     <td className="py-4 text-slate-600">{customer.address || '-'}</td>
                                     <td className={`py-4 font-bold font-data-tabular ${Number(customer.totalDebt) > 0 ? 'text-red-600' : Number(customer.totalDebt) < 0 ? 'text-blue-600' : 'text-slate-500'}`}>
@@ -168,7 +178,7 @@ export const CustomersPage: React.FC = () => {
             </div>
 
             <AddCustomerModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} onSuccess={loadCustomers} />
-            <PrintPreviewModal isOpen={isPreviewOpen} onClose={() => setPreviewOpen(false)} html={printHtml} onPrint={executePrint} title="معاينة قائمة العملاء" />
+            <PrintPreviewModal isOpen={isPreviewOpen} onClose={() => setPreviewOpen(false)} html={printHtml} onPrint={executePrint} title="معاينة القائمة" />
         </div>
     );
 };

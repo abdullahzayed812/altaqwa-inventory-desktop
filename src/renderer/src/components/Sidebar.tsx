@@ -35,10 +35,6 @@ export const Sidebar: React.FC = () => {
                     <span className="material-symbols-outlined">shopping_cart</span>
                     <span className="font-label-md text-label-md">الطلبات</span>
                 </NavLink>
-                <NavLink to="/drivers" className={getNavClass}>
-                    <span className="material-symbols-outlined">local_shipping</span>
-                    <span className="font-label-md text-label-md">السائقين</span>
-                </NavLink>
                 <NavLink to="/payments" className={getNavClass}>
                     <span className="material-symbols-outlined">payments</span>
                     <span className="font-label-md text-label-md">المدفوعات</span>

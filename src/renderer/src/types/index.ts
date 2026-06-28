@@ -1,8 +1,12 @@
 export enum OrderStatus {
   PENDING = 'PENDING',
-  ASSIGNED = 'ASSIGNED',
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
+}
+
+export enum CustomerType {
+  CUSTOMER = 'customer',
+  DRIVER = 'driver',
 }
 
 export enum PaymentMethod {
@@ -15,17 +19,15 @@ export enum SupplierLedgerType {
   PAYMENT = 'PAYMENT',
 }
 
-export enum DriverLedgerType {
-  DELIVERY = 'DELIVERY',
-  PAYMENT = 'PAYMENT',
-  DEBT = 'DEBT',
-}
-
 export interface Customer {
   id: number;
   name: string;
   phone: string | null;
   address: string | null;
+  type: CustomerType;
+  vehiclePlate: string | null;
+  vehicleDetails: string | null;
+  isAvailable: boolean;
   totalDebt: number;
   createdAt: string;
   updatedAt: string;
@@ -51,28 +53,6 @@ export interface Product {
   updatedAt: string;
 }
 
-export interface Driver {
-  id: number;
-  name: string;
-  phone: string | null;
-  vehiclePlate: string | null;
-  vehicleDetails: string | null;
-  isAvailable: boolean;
-  totalBalance: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface DriverLedger {
-  id: number;
-  driverId: number;
-  type: DriverLedgerType;
-  amount: number;
-  referenceId: number | null;
-  notes: string | null;
-  createdAt: string;
-}
-
 export interface OrderItem {
   id: number;
   orderId: number;
@@ -88,9 +68,8 @@ export interface Order {
   customerId: number | null;
   customer?: Customer;
   totalAmount: number;
+  naulonUncollected: number;
   status: OrderStatus;
-  driverId: number | null;
-  assignedDriver?: Driver | null;
   items?: OrderItem[];
   createdAt: string;
   updatedAt: string;
