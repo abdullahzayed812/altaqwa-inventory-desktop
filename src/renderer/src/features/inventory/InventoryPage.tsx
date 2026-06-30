@@ -67,7 +67,7 @@ export const InventoryPage: React.FC = () => {
                 </div>
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-r-4 border-amber-500">
                     <p className="text-slate-500 font-label-md mb-2">منتجات منخفضة المخزون</p>
-                    <p className="font-headline-lg text-amber-600">{products.filter(p => p.stock < 10).length}</p>
+                    <p className="font-headline-lg text-amber-600">{products.filter(p => p.stock !== null && p.stock < 10).length}</p>
                 </div>
             </div>
 
@@ -92,10 +92,10 @@ export const InventoryPage: React.FC = () => {
                                 <tr key={product.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4 font-data-tabular">#{product.id}</td>
                                     <td className="px-6 py-4 font-body-md font-medium">{product.name}</td>
-                                    <td className="px-6 py-4 font-data-tabular font-bold">{product.price} ج.م</td>
-                                    <td className={`px-6 py-4 font-bold font-data-tabular ${product.stock < 10 ? 'text-error' : 'text-on-surface'}`}>{product.stock}</td>
+                                    <td className="px-6 py-4 font-data-tabular font-bold">{product.price ?? '-'} ج.م</td>
+                                    <td className={`px-6 py-4 font-bold font-data-tabular ${product.stock !== null && product.stock < 10 ? 'text-error' : 'text-on-surface'}`}>{product.stock ?? '-'}</td>
                                     <td className="px-6 py-4">
-                                        {product.stock < 10 ? (
+                                        {product.stock !== null && product.stock < 10 ? (
                                             <span className="px-3 py-1 rounded-full bg-error-container text-error text-xs font-bold">مخزون منخفض</span>
                                         ) : (
                                             <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold">متوفر</span>

@@ -41,10 +41,10 @@ export const deleteCustomer = (id: number) =>
 export const getProducts = () =>
   client.get<Product[]>('/products').then(r => r.data);
 
-export const createProduct = (data: { name: string; price: number; stock: number }) =>
+export const createProduct = (data: { name: string; price?: number | null; stock?: number | null }) =>
   client.post<Product>('/products', data).then(r => r.data);
 
-export const updateProduct = (id: number, data: { name?: string; price?: number; stock?: number }) =>
+export const updateProduct = (id: number, data: { name?: string; price?: number | null; stock?: number | null }) =>
   client.put<Product>(`/products/${id}`, data).then(r => r.data);
 
 export const updateStock = (id: number, quantity: number) =>

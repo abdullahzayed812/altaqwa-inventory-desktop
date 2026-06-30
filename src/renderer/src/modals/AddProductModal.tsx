@@ -10,7 +10,7 @@ interface AddProductModalProps {
 export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [name, setName] = useState('');
     const [sellPrice, setSellPrice] = useState('');
-    const [stock, setStock] = useState('0');
+    const [stock, setStock] = useState('');
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
@@ -21,8 +21,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         try {
             await createProduct({
                 name,
-                price: Number(sellPrice),
-                stock: Number(stock),
+                price: sellPrice !== '' ? Number(sellPrice) : null,
+                stock: stock !== '' ? Number(stock) : null,
             });
             onSuccess();
             onClose();
@@ -59,7 +59,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                             <div className="space-y-2">
                                 <label className="block font-label-md text-on-surface-variant">سعر البيع</label>
                                 <div className="relative">
-                                    <input value={sellPrice} onChange={e => setSellPrice(e.target.value)} required className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-300 bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-data-tabular text-right" placeholder="0.00" type="number" min="0" step="0.01" />
+                                    <input value={sellPrice} onChange={e => setSellPrice(e.target.value)} className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-300 bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-data-tabular text-right" placeholder="0.00" type="number" min="0" step="0.01" />
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <span className="text-slate-400 text-xs font-bold">ج.م</span>
                                     </div>
@@ -67,7 +67,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                             </div>
                             <div className="space-y-2">
                                 <label className="block font-label-md text-on-surface-variant">الكمية الافتتاحية</label>
-                                <input value={stock} onChange={e => setStock(e.target.value)} required className="w-full h-12 px-4 rounded-xl border border-slate-300 bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-data-tabular text-right" placeholder="0" type="number" min="0" />
+                                <input value={stock} onChange={e => setStock(e.target.value)} className="w-full h-12 px-4 rounded-xl border border-slate-300 bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-data-tabular text-right" placeholder="0" type="number" min="0" />
                             </div>
                         </div>
                     </form>
