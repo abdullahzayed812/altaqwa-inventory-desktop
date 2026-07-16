@@ -8,7 +8,7 @@ import type {
 
 // ─── Customers ────────────────────────────────────────────────────────────────
 
-export const getCustomers = (type?: 'customer' | 'driver') =>
+export const getCustomers = (type?: 'customer' | 'driver' | 'financial') =>
   client.get<Customer[]>('/customers', { params: type ? { type } : undefined }).then(r => r.data);
 
 export const getCustomerById = (id: number) =>
@@ -19,7 +19,7 @@ export const createCustomer = (data: {
   phone?: string;
   address?: string;
   initialDebt?: number;
-  type?: 'customer' | 'driver';
+  type?: 'customer' | 'driver' | 'financial';
   vehiclePlate?: string;
   vehicleDetails?: string;
 }) => client.post<Customer>('/customers', data).then(r => r.data);

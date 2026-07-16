@@ -13,7 +13,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
-    const [type, setType] = useState<'customer' | 'driver'>('customer');
+    const [type, setType] = useState<'customer' | 'driver' | 'financial'>('customer');
     const [vehiclePlate, setVehiclePlate] = useState('');
     const [vehicleDetails, setVehicleDetails] = useState('');
     const [balanceAmount, setBalanceAmount] = useState('');
@@ -83,6 +83,10 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ isOpen, onCl
                                 <button type="button" onClick={() => setType('driver')}
                                     className={`flex-1 py-2 rounded-lg border font-bold text-sm transition-all ${type === 'driver' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
                                     سائق
+                                </button>
+                                <button type="button" onClick={() => setType('financial')}
+                                    className={`flex-1 py-2 rounded-lg border font-bold text-sm transition-all ${type === 'financial' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                                    حساب مالي
                                 </button>
                             </div>
                         </div>

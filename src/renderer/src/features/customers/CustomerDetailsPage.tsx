@@ -42,6 +42,7 @@ export const CustomerDetailsPage: React.FC = () => {
             setCustomer(c);
             setOrders(o);
             setPayments(p);
+            if (c?.type === 'financial') setActiveTab('payments');
         } catch (e) {
             console.error('Failed to load customer details');
         }
@@ -218,10 +219,12 @@ export const CustomerDetailsPage: React.FC = () => {
 
                 <div className="col-span-9 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div className="flex border-b border-slate-100">
-                        <button onClick={() => setActiveTab('orders')}
-                            className={`px-6 py-4 font-bold text-sm transition-all ${activeTab === 'orders' ? 'text-primary border-b-2 border-primary' : 'text-slate-500 hover:text-slate-700'}`}>
-                            الطلبات ({orders.length})
-                        </button>
+                        {customer?.type !== 'financial' && (
+                            <button onClick={() => setActiveTab('orders')}
+                                className={`px-6 py-4 font-bold text-sm transition-all ${activeTab === 'orders' ? 'text-primary border-b-2 border-primary' : 'text-slate-500 hover:text-slate-700'}`}>
+                                الطلبات ({orders.length})
+                            </button>
+                        )}
                         <button onClick={() => setActiveTab('payments')}
                             className={`px-6 py-4 font-bold text-sm transition-all ${activeTab === 'payments' ? 'text-primary border-b-2 border-primary' : 'text-slate-500 hover:text-slate-700'}`}>
                             المدفوعات ({payments.length})
@@ -229,7 +232,7 @@ export const CustomerDetailsPage: React.FC = () => {
                     </div>
 
                     <div className="overflow-x-auto">
-                        {activeTab === 'orders' ? (
+                        {activeTab === 'orders' && customer?.type !== 'financial' ? (
                             <table className="w-full text-right">
                                 <thead>
                                     <tr className="text-slate-500 border-b border-slate-50 text-sm bg-slate-50/50">

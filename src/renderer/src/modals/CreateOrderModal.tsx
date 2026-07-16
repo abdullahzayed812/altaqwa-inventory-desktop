@@ -34,7 +34,7 @@ export const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ isOpen, onCl
     useEffect(() => {
         if (isOpen) {
             Promise.all([getCustomers(), getProducts()])
-                .then(([c, p]) => { setCustomers(c); setProducts(p); })
+                .then(([c, p]) => { setCustomers(c.filter((cust: any) => cust.type !== 'financial')); setProducts(p); })
                 .catch(console.error);
         }
     }, [isOpen]);

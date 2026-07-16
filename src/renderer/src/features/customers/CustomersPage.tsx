@@ -147,9 +147,11 @@ export const CustomersPage: React.FC = () => {
                                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                                             customer.type === 'driver'
                                                 ? 'bg-amber-100 text-amber-700'
-                                                : 'bg-blue-100 text-blue-700'
+                                                : customer.type === 'financial'
+                                                    ? 'bg-purple-100 text-purple-700'
+                                                    : 'bg-blue-100 text-blue-700'
                                         }`}>
-                                            {customer.type === 'driver' ? 'سائق' : 'عميل'}
+                                            {customer.type === 'driver' ? 'سائق' : customer.type === 'financial' ? 'حساب مالي' : 'عميل'}
                                         </span>
                                     </td>
                                     <td className="py-4 text-slate-600 font-data-tabular">{customer.phone || '-'}</td>
