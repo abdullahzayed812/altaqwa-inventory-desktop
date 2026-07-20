@@ -1,3 +1,10 @@
+@import "@fontsource/cairo/400.css";
+@import "@fontsource/cairo/500.css";
+@import "@fontsource/cairo/600.css";
+@import "@fontsource/cairo/700.css";
+@import "@fontsource/cairo/800.css";
+@import "@fontsource/cairo/900.css";
+@import "material-symbols/outlined.css";
 @import "tailwindcss";
 
 @theme {
@@ -56,12 +63,12 @@
   --spacing-gutter: 1.5rem;
   --spacing-input-padding-y: 0.75rem;
 
-  --font-body-md: "Inter", sans-serif;
-  --font-label-sm: "Inter", sans-serif;
-  --font-headline-lg: "Inter", sans-serif;
-  --font-body-lg: "Inter", sans-serif;
-  --font-headline-xl: "Inter", sans-serif;
-  --font-label-md: "Inter", sans-serif;
-  --font-headline-md: "Inter", sans-serif;
-  --font-data-tabular: "Inter", sans-serif;
+  --font-body-md: "Cairo", sans-serif;
+  --font-label-sm: "Cairo", sans-serif;
+  --font-headline-lg: "Cairo", sans-serif;
+  --font-body-lg: "Cairo", sans-serif;
+  --font-headline-xl: "Cairo", sans-serif;
+  --font-label-md: "Cairo", sans-serif;
+  --font-headline-md: "Cairo", sans-serif;
+  --font-data-tabular: "Cairo", sans-serif;
 }

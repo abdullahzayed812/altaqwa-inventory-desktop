@@ -15,7 +15,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/cairo": "^5.2.7",
     "axios": "^1.16.1",
+    "material-symbols": "^0.45.8",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2"
