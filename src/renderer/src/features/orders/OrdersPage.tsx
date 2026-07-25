@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { getOrders, updateOrderStatus } from '../../api';
+import { getOrders, updateOrderStatus, deleteOrder } from '../../api';
 import { OrderStatus } from '../../types';
 import { CreateOrderModal } from '../../modals/CreateOrderModal';
+import { EditOrderModal } from '../../modals/EditOrderModal';
 import { PrintPreviewModal } from '../../modals/PrintPreviewModal';
 
 export const OrdersPage: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [isModalOpen, setModalOpen] = useState(false);
+    const [editingOrder, setEditingOrder] = useState<any | null>(null);
     const [isPreviewOpen, setPreviewOpen] = useState(false);
     const [printHtml, setPrintHtml] = useState('');
     const [previewTitle, setPreviewTitle] = useState('معاينة الطباعة');
@@ -63,6 +65,16 @@ export const OrdersPage: React.FC = () => {
             loadOrders();
         } catch (e) {
             console.error('Failed to update status', e);
+        }
+    };
+
+    const handleDelete = async (order: any) => {
+        if (!window.confirm(`هل أنت متأكد من حذف الطلب #${order.orderNumber}؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
+        try {
+            await deleteOrder(order.id);
+            loadOrders();
+        } catch (e: any) {
+            alert(e.message || 'فشل حذف الطلب');
         }
     };
 
@@ -187,6 +199,12 @@ export const OrdersPage: React.FC = () => {
                                         <button onClick={() => handlePrintInvoice(order)} className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-all" title="طباعة الفاتورة">
                                             <span className="material-symbols-outlined">print</span>
                                         </button>
+                                        <button onClick={() => setEditingOrder(order)} className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="تعديل الطلب">
+                                            <span className="material-symbols-outlined">edit</span>
+                                        </button>
+                                        <button onClick={() => handleDelete(order)} className="p-1.5 text-error hover:bg-error-container/20 rounded-lg transition-all" title="حذف الطلب">
+                                            <span className="material-symbols-outlined">delete</span>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -196,6 +214,7 @@ export const OrdersPage: React.FC = () => {
             </div>
 
             <CreateOrderModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} onSuccess={loadOrders} />
+            <EditOrderModal isOpen={!!editingOrder} order={editingOrder} onClose={() => setEditingOrder(null)} onSuccess={loadOrders} />
             <PrintPreviewModal isOpen={isPreviewOpen} onClose={() => setPreviewOpen(false)} html={printHtml} onPrint={executePrint} title={previewTitle} />
         </div>
     );
